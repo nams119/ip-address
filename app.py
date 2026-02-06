@@ -111,19 +111,24 @@ if prompt := st.chat_input("IP 주소 목록을 입력하세요..."):
 
         try:
             # System instruction embedded in the prompt for simplicity in this single-turn use case
-            # Requesting Code Block for clear formatting
+            # Requesting Code Block for clear formatting and handling invalid IPs
             system_prompt = """
-            당신은 IP 주소 정리 봇입니다. 
-            사용자가 입력한 텍스트에서 IP 주소들을 추출하여, 각 IP 주소를 한 줄에 하나씩 출력하세요.
+            당신은 텍스트 정리 봇입니다. 
+            사용자가 입력한 텍스트를 콤마(,)나 공백을 기준으로 줄바꿈(\n)하여 정리하세요.
             
-            반드시 아래와 같은 **코드 블록(code block)** 형식으로 출력하세요.
+            **규칙:**
+            1. 입력된 내용이 유효한 IP 주소(0~255 사이의 숫자 4개)가 아닌 경우(예: `325.435...`), **반드시** 출력 결과 위에 다음 문구를 적어주세요:
+               "⚠️ 이건 유효한 IP 주소가 아닌 것 같지만, 요청하신 대로 줄바꿈하여 정리해 드렸습니다."
+            2. 그 다음, 정리된 내용을 반드시 **코드 블록(code block)** 형식으로 출력하세요.
+            
+            **출력 예시:**
+            (유효하지 않은 값이 있는 경우)
+            ⚠️ 이건 유효한 IP 주소가 아닌 것 같지만, 요청하신 대로 줄바꿈하여 정리해 드렸습니다.
             ```text
-            IP_ADDRESS_1
-            IP_ADDRESS_2
+            325.435.4353.235
+            23445.463.463.453
             ...
             ```
-            
-            불필요한 설명이나 인삿말은 생략하고 결과만 출력하세요.
             """
 
             chat = model.start_chat()
