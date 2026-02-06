@@ -9,6 +9,53 @@ warnings.filterwarnings("ignore")
 # Page Configuration
 st.set_page_config(page_title="IP Formatter Bot", page_icon="🤖", layout="centered")
 
+
+# --- Password Protection ---
+def check_password():
+    """Returns `True` if the user had the correct password."""
+
+    # 1. Get password from secrets
+    password = st.secrets.get("PASSWORD") or os.environ.get("PASSWORD")
+
+    # If no password is set in secrets, allow access (or you can choose to block)
+    # For safety, let's block if no password is set to urge the user to set one
+    if not password:
+        st.error("⚠️ 관리자 설정 필요: Secrets에 'PASSWORD'가 설정되지 않았습니다.")
+        return False
+
+    def password_entered():
+        """Checks whether a password entered by the user is correct."""
+        if st.session_state["password"] == password:
+            st.session_state["password_correct"] = True
+            del st.session_state["password"]  # Don't store the password
+        else:
+            st.session_state["password_correct"] = False
+
+    # Return True if the password has already been validated
+    if st.session_state.get("password_correct", False):
+        return True
+
+    # Show input for password
+    st.text_input(
+        "비밀번호를 입력하세요",
+        type="password",
+        key="password",
+        on_change=password_entered,
+    )
+
+    if (
+        "password_correct" in st.session_state
+        and not st.session_state["password_correct"]
+    ):
+        st.error("❌ 비밀번호가 틀렸습니다. 다시 시도해주세요.")
+
+    return False
+
+
+if not check_password():
+    st.stop()  # Stop execution if password is not correct
+# ---------------------------
+
 # Title and Description
 st.title("🤖 IP Address Formatter")
 st.markdown(
@@ -44,12 +91,6 @@ except Exception as e:
 # Initialize Chat History
 if "messages" not in st.session_state:
     st.session_state.messages = []
-
-    # Add initial greeting
-    # st.session_state.messages.append({
-    #     "role": "assistant",
-    #     "content": "안녕하세요! 정리하고 싶은 IP 주소들을 입력해주세요. 콤마(,)로 구분된 긴 IP 목록도 깔끔하게 줄바꿈하여 정리해 드립니다."
-    # })
 
 # Display Chat Messages
 for message in st.session_state.messages:
